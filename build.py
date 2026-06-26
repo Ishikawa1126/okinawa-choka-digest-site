@@ -243,8 +243,6 @@ def render_home(posts: list[tuple[dict[str, str], str]]) -> str:
           <div><span>風</span><strong>{html.escape(latest.get("wind", ""))}</strong></div>
           <div><span>波</span><strong>{html.escape(latest.get("wave", ""))}</strong></div>
           <div><span>水温</span><strong>{html.escape(latest.get("sea_temp", "取得中"))}</strong></div>
-        </div>
-        <div class="info-grid">
           <div><span>潮</span><strong>{html.escape(latest.get("tide", ""))}</strong></div>
           <div><span>満潮</span><strong>{html.escape(latest.get("high_tide", ""))}</strong></div>
           <div><span>干潮</span><strong>{html.escape(latest.get("low_tide", ""))}</strong></div>
@@ -252,16 +250,20 @@ def render_home(posts: list[tuple[dict[str, str], str]]) -> str:
       </article>
 
       <aside class="side-card">
-        <p class="panel-label">Catch Trend</p>
-        <h2>直近釣果</h2>
-        <ul>{catch_items}</ul>
-        <p class="panel-label">Target Fish</p>
-        <h2>狙い目魚種</h2>
-        <ul class="chips">{fish_items}</ul>
+        <div class="side-section">
+          <p class="panel-label">Catch Trend</p>
+          <h2>直近釣果</h2>
+          <ul>{catch_items}</ul>
+        </div>
+        <div class="side-section">
+          <p class="panel-label">Target Fish</p>
+          <h2>狙い目魚種</h2>
+          <ul class="chips">{fish_items}</ul>
+        </div>
       </aside>
     </section>
 
-    <section class="two-column">
+    <section class="time-band">
       <article class="panel">
         <p class="panel-label">Best Time</p>
         <h2>おすすめ時間帯</h2>
@@ -269,11 +271,6 @@ def render_home(posts: list[tuple[dict[str, str], str]]) -> str:
           <div><span>朝まずめ</span><strong>{html.escape(latest.get("morning_time", ""))}</strong></div>
           <div><span>夕まずめ</span><strong>{html.escape(latest.get("evening_time", ""))}</strong></div>
         </div>
-      </article>
-      <article class="panel caution-panel">
-        <p class="panel-label">Safety</p>
-        <h2>注意点</h2>
-        <p>{html.escape(latest.get("warning", ""))}</p>
       </article>
     </section>
 
@@ -586,6 +583,9 @@ main, .page {
   margin: 0 0 12px;
   line-height: 1.25;
 }
+.side-section + .side-section {
+  margin-top: 18px;
+}
 .side-card ul:not(.chips) {
   list-style: none;
   padding-left: 0;
@@ -623,6 +623,9 @@ main, .page {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 20px;
+  margin: 20px 0;
+}
+.time-band {
   margin: 20px 0;
 }
 .time-slots {
@@ -803,6 +806,9 @@ pre {
   }
 }
 @media (max-width: 800px) {
+  main, .page {
+    width: min(100% - 18px, 1120px);
+  }
   .header-inner, .section-title {
     align-items: flex-start;
     flex-direction: column;
@@ -823,6 +829,7 @@ pre {
   }
   .today-layout, .two-column, .post-summary {
     grid-template-columns: 1fr;
+    gap: 12px;
   }
   .card-grid,
   .fish-grid,
@@ -833,43 +840,139 @@ pre {
     display: block;
   }
   .info-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    margin-top: 8px;
   }
   .hero {
     min-height: 0;
     align-items: end;
-    gap: 18px;
-    padding: 24px 18px;
+    gap: 12px;
+    margin: 14px 0 12px;
+    padding: 20px 16px;
     background-position: 58% center;
   }
   .hero::before {
     inset: 12px;
   }
   .hero h1 {
-    font-size: clamp(2.2rem, 10vw, 2.9rem);
+    font-size: clamp(2rem, 9.2vw, 2.5rem);
     line-height: 1.08;
     word-break: keep-all;
     overflow-wrap: anywhere;
     max-width: 100%;
+    margin-bottom: 6px;
   }
   .hero p {
-    font-size: .96rem;
-    line-height: 1.8;
+    font-size: .9rem;
+    line-height: 1.6;
+    max-width: 100%;
+  }
+  .hero-copy > p:not(.eyebrow) {
+    display: none;
   }
   .hero .eyebrow {
-    font-size: .94rem;
+    font-size: .82rem;
     line-height: 1.45;
+    margin-bottom: 4px;
   }
   .hero-badge {
     width: 100%;
     min-width: 0;
-    padding: 14px 16px;
+    padding: 10px 12px;
   }
   .hero-badge strong {
+    font-size: 1rem;
+  }
+  .main-card, .side-card, .panel, .article-list {
+    padding: 14px;
+  }
+  .section-title {
+    gap: 6px;
+    font-size: 1.05rem;
+  }
+  .section-title strong {
+    font-size: .82rem;
+    padding: 4px 9px;
+  }
+  .alert {
+    margin: 10px 0;
+    padding: 9px 11px;
+    font-size: .88rem;
+  }
+  .alert span {
+    font-size: .75rem;
+  }
+  .info-grid div {
+    min-height: 0;
+    padding: 8px 9px;
+  }
+  .info-grid span,
+  .post-summary span {
+    font-size: .76rem;
+    margin-bottom: 2px;
+  }
+  .info-grid strong,
+  .post-summary strong {
+    font-size: .9rem;
+    line-height: 1.3;
+  }
+  .side-card {
+    display: grid;
+    grid-template-columns: 1.1fr .9fr;
+    gap: 12px;
+  }
+  .side-section + .side-section {
+    margin-top: 0;
+  }
+  .side-card h2, .panel h2, .article-list h2 {
     font-size: 1.08rem;
+    margin-bottom: 8px;
+  }
+  .side-card ul:not(.chips) {
+    margin-bottom: 0;
+  }
+  .side-card ul:not(.chips) li {
+    padding: 7px 9px;
+    margin-bottom: 6px;
+    font-size: .86rem;
+  }
+  .chips {
+    gap: 6px;
+    margin: 0;
+  }
+  .chips span {
+    padding: 5px 8px;
+    font-size: .84rem;
+  }
+  .two-column,
+  .time-band {
+    margin: 12px 0;
   }
   .time-slots {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+  .time-slots div {
+    padding: 10px;
+  }
+  .time-slots strong {
+    font-size: .95rem;
+  }
+  .article-list {
+    margin-bottom: 22px;
+  }
+  .site-footer {
+    padding: 16px;
+    font-size: .9rem;
+  }
+}
+@media (max-width: 430px) {
+  .brand {
+    font-size: .96rem;
+  }
+  .hero h1 {
+    font-size: clamp(1.85rem, 8.5vw, 2.25rem);
   }
 }
 """
