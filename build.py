@@ -11,6 +11,10 @@ CONTENT_DIR = ROOT / "content" / "posts"
 PAGES_DIR = ROOT / "src" / "pages"
 ASSETS_DIR = ROOT / "assets"
 SITE_DIR = ROOT / "site"
+SITE_URL = "https://ishikawa1126.github.io/okinawa-choka-digest-site/"
+SITE_NAME = "沖縄釣果ダイジェスト"
+DEFAULT_DESCRIPTION = "毎朝5分で沖縄本島の天気・風・波・海水温・潮見・釣果傾向がわかる釣り情報サイトです。"
+DEFAULT_OG_IMAGE = "assets/okinawa-fishing-info.png"
 
 
 def parse_markdown(path: Path) -> tuple[dict[str, str], str]:
@@ -154,7 +158,23 @@ def split_pipe(value: str) -> list[str]:
     return [item.strip() for item in value.split("|") if item.strip()]
 
 
-def base_html(title: str, content: str, current: str = "", base_path: str = "") -> str:
+def absolute_url(path: str = "") -> str:
+    return f"{SITE_URL.rstrip('/')}/{path.lstrip('/')}" if path else SITE_URL
+
+
+def page_title(title: str) -> str:
+    return title if title == SITE_NAME or title.startswith(SITE_NAME) else f"{title} | {SITE_NAME}"
+
+
+def base_html(
+    title: str,
+    content: str,
+    current: str = "",
+    base_path: str = "",
+    description: str = DEFAULT_DESCRIPTION,
+    url_path: str = "",
+    image_path: str = DEFAULT_OG_IMAGE,
+) -> str:
     nav = [
         ("index.html", "トップ", "home"),
         ("areas.html", "エリア別", "areas"),
@@ -165,13 +185,28 @@ def base_html(title: str, content: str, current: str = "", base_path: str = "") 
         f'<a class="{"active" if key == current else ""}" href="{base_path}{href}">{label}</a>'
         for href, label, key in nav
     )
+    title_text = page_title(title)
+    canonical_url = absolute_url(url_path)
+    image_url = image_path if image_path.startswith(("http://", "https://")) else absolute_url(image_path)
     return f"""<!doctype html>
 <html lang="ja">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="毎朝5分で沖縄本島の釣り情報がわかるサイト">
-  <title>{html.escape(title)}</title>
+  <meta name="description" content="{html.escape(description)}">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="{html.escape(canonical_url)}">
+  <meta property="og:site_name" content="{html.escape(SITE_NAME)}">
+  <meta property="og:type" content="{"website" if current == "home" else "article"}">
+  <meta property="og:title" content="{html.escape(title_text)}">
+  <meta property="og:description" content="{html.escape(description)}">
+  <meta property="og:url" content="{html.escape(canonical_url)}">
+  <meta property="og:image" content="{html.escape(image_url)}">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="{html.escape(title_text)}">
+  <meta name="twitter:description" content="{html.escape(description)}">
+  <meta name="twitter:image" content="{html.escape(image_url)}">
+  <title>{html.escape(title_text)}</title>
   <link rel="stylesheet" href="{base_path}styles.css">
 </head>
 <body>
@@ -280,11 +315,20 @@ def render_home(posts: list[tuple[dict[str, str], str]]) -> str:
     </section>
   </main>
 """
-    return base_html("沖縄釣果ダイジェスト", content, "home")
+    description = (
+        f"{latest.get('display_date', latest['date'])}の沖縄本島の釣り情報。"
+        f"天気・風・波・海水温・潮見・直近釣果・狙い目魚種を釣行前に確認できます。"
+    )
+    return base_html(SITE_NAME, content, "home", description=description)
 
 
 def render_post(meta: dict[str, str], body: str) -> str:
     public_body = remove_markdown_section(body, "X投稿用テキスト")
+    description = (
+        f"{meta.get('display_date', meta['date'])}の沖縄本島の釣り情報。"
+        f"{meta.get('weather', '')}、{meta.get('wind', '')}、波{meta.get('wave', '')}、"
+        f"潮回り{meta.get('tide', '')}、直近釣果と注意点をまとめています。"
+    )
     content = f"""
   <main class="page">
     <article class="article">
@@ -298,7 +342,14 @@ def render_post(meta: dict[str, str], body: str) -> str:
     </article>
   </main>
 """
-    return base_html(meta.get("title", "記事"), content, base_path="../")
+    return base_html(
+        meta.get("title", "記事"),
+        content,
+        base_path="../",
+        description=description,
+        url_path=post_url(meta),
+        image_path=meta.get("eyecatch", DEFAULT_OG_IMAGE),
+    )
 
 
 def render_page(path: Path, key: str) -> str:
@@ -321,7 +372,18 @@ def render_page(path: Path, key: str) -> str:
     </article>
   </main>
 """
-    return base_html(meta.get("title", ""), content, key)
+    page_paths = {
+        "areas": "areas.html",
+        "fish": "fish.html",
+        "beginner": "beginner.html",
+    }
+    return base_html(
+        meta.get("title", ""),
+        content,
+        key,
+        description=meta.get("description", DEFAULT_DESCRIPTION),
+        url_path=page_paths.get(key, ""),
+    )
 
 
 def write_styles() -> None:
@@ -988,6 +1050,45 @@ def copy_assets() -> None:
                 shutil.copyfile(path, target / path.name)
 
 
+def write_robots() -> None:
+    (SITE_DIR / "robots.txt").write_text(
+        f"""User-agent: *
+Allow: /
+
+Sitemap: {absolute_url("sitemap.xml")}
+""",
+        encoding="utf-8",
+    )
+
+
+def write_sitemap(posts: list[tuple[dict[str, str], str]]) -> None:
+    urls = [
+        ("", ""),
+        ("areas.html", ""),
+        ("fish.html", ""),
+        ("beginner.html", ""),
+    ]
+    urls.extend((post_url(meta), meta.get("date", "")) for meta, _ in posts)
+
+    entries = []
+    for path, lastmod in urls:
+        lastmod_xml = f"\n    <lastmod>{html.escape(lastmod)}</lastmod>" if lastmod else ""
+        entries.append(
+            f"""  <url>
+    <loc>{html.escape(absolute_url(path))}</loc>{lastmod_xml}
+  </url>"""
+        )
+
+    (SITE_DIR / "sitemap.xml").write_text(
+        f"""<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+{chr(10).join(entries)}
+</urlset>
+""",
+        encoding="utf-8",
+    )
+
+
 def build() -> None:
     SITE_DIR.mkdir(parents=True, exist_ok=True)
     (SITE_DIR / "posts").mkdir(exist_ok=True)
@@ -1010,6 +1111,8 @@ def build() -> None:
     (SITE_DIR / "areas.html").write_text(render_page(PAGES_DIR / "areas.md", "areas"), encoding="utf-8")
     (SITE_DIR / "fish.html").write_text(render_page(PAGES_DIR / "fish.md", "fish"), encoding="utf-8")
     (SITE_DIR / "beginner.html").write_text(render_page(PAGES_DIR / "beginner.md", "beginner"), encoding="utf-8")
+    write_robots()
+    write_sitemap(posts)
 
 
 if __name__ == "__main__":
