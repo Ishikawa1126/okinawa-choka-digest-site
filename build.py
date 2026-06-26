@@ -886,15 +886,37 @@ pre {
     grid-template-columns: 1fr;
   }
   .hero {
-    min-height: 340px;
-    padding: 22px;
-    background-position: center;
+    min-height: 0;
+    align-items: end;
+    gap: 18px;
+    padding: 24px 18px;
+    background-position: 58% center;
+  }
+  .hero::before {
+    inset: 12px;
   }
   .hero h1 {
-    font-size: clamp(2rem, 12vw, 3rem);
+    font-size: clamp(2.2rem, 10vw, 2.9rem);
+    line-height: 1.08;
+    word-break: keep-all;
+    overflow-wrap: anywhere;
+    max-width: 100%;
+  }
+  .hero p {
+    font-size: .96rem;
+    line-height: 1.8;
+  }
+  .hero .eyebrow {
+    font-size: .94rem;
+    line-height: 1.45;
   }
   .hero-badge {
     width: 100%;
+    min-width: 0;
+    padding: 14px 16px;
+  }
+  .hero-badge strong {
+    font-size: 1.08rem;
   }
   .quick-strip,
   .time-slots {
