@@ -244,6 +244,10 @@ def render_home(posts: list[tuple[dict[str, str], str]]) -> str:
         <strong>{html.escape(latest.get("wave", ""))}</strong>
       </div>
       <div>
+        <span>水温</span>
+        <strong>{html.escape(latest.get("sea_temp", "取得中"))}</strong>
+      </div>
+      <div>
         <span>注目</span>
         <strong>{html.escape(split_csv(latest.get("fish", ""))[0] if split_csv(latest.get("fish", "")) else "釣果確認")}</strong>
       </div>
@@ -260,6 +264,7 @@ def render_home(posts: list[tuple[dict[str, str], str]]) -> str:
           <div><span>天気</span><strong>{html.escape(latest.get("weather", ""))}</strong></div>
           <div><span>風</span><strong>{html.escape(latest.get("wind", ""))}</strong></div>
           <div><span>波</span><strong>{html.escape(latest.get("wave", ""))}</strong></div>
+          <div><span>水温</span><strong>{html.escape(latest.get("sea_temp", "取得中"))}</strong></div>
         </div>
         <div class="info-grid">
           <div><span>潮</span><strong>{html.escape(latest.get("tide", ""))}</strong></div>
@@ -311,7 +316,7 @@ def render_post(meta: dict[str, str], body: str) -> str:
       <p class="eyebrow">{html.escape(meta.get("display_date", meta["date"]))}</p>
       <h1>{html.escape(meta.get("title", ""))}</h1>
       <div class="post-summary">
-        <div><span>海況</span><strong>{html.escape(meta.get("weather", ""))} / {html.escape(meta.get("wind", ""))} / {html.escape(meta.get("wave", ""))}</strong></div>
+        <div><span>海況</span><strong>{html.escape(meta.get("weather", ""))} / {html.escape(meta.get("wind", ""))} / {html.escape(meta.get("wave", ""))} / 水温 {html.escape(meta.get("sea_temp", "取得中"))}</strong></div>
         <div><span>潮見</span><strong>{html.escape(meta.get("tide", ""))} 満潮 {html.escape(meta.get("high_tide", ""))} / 干潮 {html.escape(meta.get("low_tide", ""))}</strong></div>
       </div>
       {markdown_to_html(public_body)}
@@ -525,7 +530,7 @@ main, .page {
 }
 .quick-strip {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 14px;
   margin: 0 0 22px;
 }

@@ -52,7 +52,7 @@ def get_weather() -> dict[str, str | float]:
         {
             "latitude": NAHA["lat"],
             "longitude": NAHA["lon"],
-            "hourly": "wave_height",
+            "hourly": "wave_height,sea_surface_temperature",
             "forecast_days": 1,
             "timezone": "Asia/Tokyo",
             "cell_selection": "sea",
@@ -66,15 +66,18 @@ def get_weather() -> dict[str, str | float]:
     rain = float(weather["hourly"]["precipitation"][weather_idx])
     temp = float(weather["hourly"]["temperature_2m"][weather_idx])
     wave = float(marine["hourly"]["wave_height"][marine_idx])
+    sea_temp = float(marine["hourly"]["sea_surface_temperature"][marine_idx])
 
     return {
         "weather": weather_label(rain, wind),
         "wind_label": wind_label(wind),
         "wave_label": wave_label(wave),
+        "sea_temp_label": f"{sea_temp:.1f}℃",
         "wind": wind,
         "rain": rain,
         "temp": temp,
         "wave": wave,
+        "sea_temp": sea_temp,
     }
 
 
@@ -263,6 +266,7 @@ def build_x_text(date_text: str, weather: dict[str, str | float], tide: dict[str
 天気：{weather["weather"]}
 風：{weather["wind_label"]}
 波：{weather["wave_label"]}
+水温：{weather["sea_temp_label"]}
 
 🎣【直近釣果】
 {catches_text}
@@ -305,6 +309,7 @@ display_date: {date_text}
 weather: {weather["weather"]}
 wind: {weather["wind_label"]}
 wave: {weather["wave_label"]}
+sea_temp: {weather["sea_temp_label"]}
 tide: {tide["tide"]}
 high_tide: {tide["high_tide"]}
 low_tide: {tide["low_tide"]}
@@ -327,6 +332,7 @@ eyecatch: assets/okinawa-fishing-info.png
 - 天気：{weather["weather"]}
 - 風：{weather["wind_label"]}（{float(weather["wind"]):.1f}m/s）
 - 波：{weather["wave_label"]}
+- 水温：{weather["sea_temp_label"]}
 - 雨：{float(weather["rain"]):.1f}mm
 - 気温：{float(weather["temp"]):.0f}℃
 
