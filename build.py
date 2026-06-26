@@ -230,29 +230,6 @@ def render_home(posts: list[tuple[dict[str, str], str]]) -> str:
       </div>
     </section>
 
-    <section class="quick-strip" aria-label="今日の概要">
-      <div>
-        <span>おすすめ度</span>
-        <strong>{rating_marks(latest.get("rating", "0"))}</strong>
-      </div>
-      <div>
-        <span>潮回り</span>
-        <strong>{html.escape(latest.get("tide", ""))}</strong>
-      </div>
-      <div>
-        <span>波</span>
-        <strong>{html.escape(latest.get("wave", ""))}</strong>
-      </div>
-      <div>
-        <span>水温</span>
-        <strong>{html.escape(latest.get("sea_temp", "取得中"))}</strong>
-      </div>
-      <div>
-        <span>注目</span>
-        <strong>{html.escape(split_csv(latest.get("fish", ""))[0] if split_csv(latest.get("fish", "")) else "釣果確認")}</strong>
-      </div>
-    </section>
-
     <section class="today-layout">
       <article class="main-card">
         <div class="section-title">
@@ -261,6 +238,7 @@ def render_home(posts: list[tuple[dict[str, str], str]]) -> str:
         </div>
         <div class="alert"><span>本日の判断</span>{html.escape(latest.get("warning", ""))}</div>
         <div class="info-grid">
+          <div><span>おすすめ度</span><strong>{rating_marks(latest.get("rating", "0"))}</strong></div>
           <div><span>天気</span><strong>{html.escape(latest.get("weather", ""))}</strong></div>
           <div><span>風</span><strong>{html.escape(latest.get("wind", ""))}</strong></div>
           <div><span>波</span><strong>{html.escape(latest.get("wave", ""))}</strong></div>
@@ -528,30 +506,6 @@ main, .page {
   color: #93f4dd;
   text-shadow: 0 2px 12px rgba(0,0,0,.36);
 }
-.quick-strip {
-  display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap: 14px;
-  margin: 0 0 22px;
-}
-.quick-strip div {
-  background: rgba(255,255,255,.88);
-  border: 1px solid rgba(5,28,49,.08);
-  border-radius: 8px;
-  padding: 15px 16px;
-  box-shadow: var(--shadow);
-  backdrop-filter: blur(10px);
-  position: relative;
-  overflow: hidden;
-}
-.quick-strip div::before {
-  content: "";
-  position: absolute;
-  inset: 0 auto 0 0;
-  width: 4px;
-  background: linear-gradient(180deg, var(--teal), var(--sand));
-}
-.quick-strip span,
 .panel-label {
   display: block;
   color: var(--teal);
@@ -559,12 +513,6 @@ main, .page {
   font-weight: 800;
   margin: 0 0 4px;
   text-transform: uppercase;
-}
-.quick-strip strong {
-  display: block;
-  font-size: 1.12rem;
-  line-height: 1.35;
-  overflow-wrap: anywhere;
 }
 .today-layout {
   display: grid;
@@ -853,9 +801,6 @@ pre {
     align-self: end;
     width: fit-content;
   }
-  .quick-strip {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
 }
 @media (max-width: 800px) {
   .header-inner, .section-title {
@@ -923,7 +868,6 @@ pre {
   .hero-badge strong {
     font-size: 1.08rem;
   }
-  .quick-strip,
   .time-slots {
     grid-template-columns: 1fr;
   }
