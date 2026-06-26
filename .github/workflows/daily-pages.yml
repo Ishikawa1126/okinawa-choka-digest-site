@@ -5,8 +5,11 @@ on:
     branches:
       - main
   schedule:
-    # 05:00 JST = 20:00 UTC on the previous day.
-    - cron: "0 20 * * *"
+    # 05:07 and 05:22 JST = 20:07 and 20:22 UTC on the previous day.
+    # GitHub scheduled workflows can be delayed or dropped at the top of the hour,
+    # so this runs once shortly after 5:00 and once as a retry.
+    - cron: "7 20 * * *"
+    - cron: "22 20 * * *"
   workflow_dispatch:
 
 permissions:
