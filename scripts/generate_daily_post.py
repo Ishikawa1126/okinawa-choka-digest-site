@@ -248,7 +248,8 @@ def far_enough(index: int, indexes: list[int], min_gap: int = 3) -> bool:
 def catch_lines() -> list[str]:
     default = "うるま市・与勝周辺：タマン好調|読谷周辺：タマン50cmクラス|港内：ミーバイ、チヌ、ハタ類"
     raw = os.getenv("CATCH_MANUAL_SUMMARY") or default
-    return [line.strip() for line in raw.split("|") if line.strip()]
+    normalized = raw.replace("\r\n", "\n").replace("\r", "\n").replace("|", "\n")
+    return [line.strip(" -・\t") for line in normalized.split("\n") if line.strip(" -・\t")]
 
 
 def build_x_text(date_text: str, weather: dict[str, str | float], tide: dict[str, str], catches: list[str], warning: str, morning: str, evening: str) -> str:
