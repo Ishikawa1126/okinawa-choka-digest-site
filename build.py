@@ -14,7 +14,7 @@ SITE_DIR = ROOT / "site"
 SITE_URL = "https://ishikawa1126.github.io/okinawa-choka-digest-site/"
 SITE_NAME = "沖縄釣果ダイジェスト"
 DEFAULT_DESCRIPTION = "毎朝5分で沖縄本島の天気・風・波・海水温・潮見・釣果傾向がわかる釣り情報サイトです。"
-DEFAULT_OG_IMAGE = "assets/okinawa-fishing-info.png"
+DEFAULT_OG_IMAGE = "assets/ogp-default.png"
 
 
 def parse_markdown(path: Path) -> tuple[dict[str, str], str]:
@@ -348,7 +348,7 @@ def render_post(meta: dict[str, str], body: str) -> str:
         base_path="../",
         description=description,
         url_path=post_url(meta),
-        image_path=meta.get("eyecatch", DEFAULT_OG_IMAGE),
+        image_path=DEFAULT_OG_IMAGE,
     )
 
 
