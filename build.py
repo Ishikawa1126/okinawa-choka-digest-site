@@ -248,7 +248,7 @@ def render_home(posts: list[tuple[dict[str, str], str]]) -> str:
     )
     article_links = "\n".join(
         f'<li><a href="{post_url(meta)}">{html.escape(meta.get("title", meta["date"]))}</a></li>'
-        for meta, _ in posts[:10]
+        for meta, _ in posts[:5]
     )
 
     content = f"""
@@ -282,6 +282,11 @@ def render_home(posts: list[tuple[dict[str, str], str]]) -> str:
           <div><span>満潮</span><strong>{html.escape(latest.get("high_tide", ""))}</strong></div>
           <div><span>干潮</span><strong>{html.escape(latest.get("low_tide", ""))}</strong></div>
         </div>
+        <div class="mini-time">
+          <span>おすすめ時間</span>
+          <strong>朝 {html.escape(latest.get("morning_time", ""))}</strong>
+          <strong>夕 {html.escape(latest.get("evening_time", ""))}</strong>
+        </div>
       </article>
 
       <aside class="side-card">
@@ -296,17 +301,6 @@ def render_home(posts: list[tuple[dict[str, str], str]]) -> str:
           <ul class="chips">{fish_items}</ul>
         </div>
       </aside>
-    </section>
-
-    <section class="time-band">
-      <article class="panel">
-        <p class="panel-label">Best Time</p>
-        <h2>おすすめ時間帯</h2>
-        <div class="time-slots">
-          <div><span>朝まずめ</span><strong>{html.escape(latest.get("morning_time", ""))}</strong></div>
-          <div><span>夕まずめ</span><strong>{html.escape(latest.get("evening_time", ""))}</strong></div>
-        </div>
-      </article>
     </section>
 
     <section class="article-list">
@@ -641,6 +635,30 @@ main, .page {
   font-size: 1.08rem;
   overflow-wrap: anywhere;
 }
+.mini-time {
+  display: grid;
+  grid-template-columns: auto repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  align-items: center;
+  margin-top: 12px;
+  background: linear-gradient(90deg, #eefcf8, #fffdf4);
+  border: 1px solid rgba(8,107,145,.12);
+  border-radius: 8px;
+  padding: 12px 14px;
+}
+.mini-time span {
+  color: var(--teal);
+  font-weight: 800;
+  white-space: nowrap;
+}
+.mini-time strong {
+  background: white;
+  border: 1px solid rgba(8,107,145,.1);
+  border-radius: 8px;
+  padding: 8px 10px;
+  text-align: center;
+  overflow-wrap: anywhere;
+}
 .side-card h2, .panel h2, .article-list h2 {
   margin: 0 0 12px;
   line-height: 1.25;
@@ -686,31 +704,6 @@ main, .page {
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 20px;
   margin: 20px 0;
-}
-.time-band {
-  margin: 20px 0;
-}
-.time-slots {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
-}
-.time-slots div {
-  background: linear-gradient(180deg, #fffdf7, #f6fbff);
-  border: 1px solid rgba(8,107,145,.13);
-  border-radius: 8px;
-  padding: 14px;
-}
-.time-slots span {
-  color: #d76518;
-  display: block;
-  font-weight: 800;
-}
-.time-slots strong {
-  display: block;
-  font-size: 1.32rem;
-  margin-top: 6px;
-  overflow-wrap: anywhere;
 }
 .caution-panel {
   border-color: rgba(198,90,42,.28);
@@ -918,7 +911,7 @@ pre {
     inset: 12px;
   }
   .hero h1 {
-    font-size: clamp(2rem, 9.2vw, 2.5rem);
+    font-size: clamp(1.72rem, 7.3vw, 2rem);
     line-height: 1.08;
     word-break: keep-all;
     overflow-wrap: anywhere;
@@ -979,6 +972,20 @@ pre {
     font-size: .9rem;
     line-height: 1.3;
   }
+  .mini-time {
+    grid-template-columns: 1fr 1fr;
+    gap: 7px;
+    margin-top: 8px;
+    padding: 9px;
+  }
+  .mini-time span {
+    grid-column: 1 / -1;
+    font-size: .78rem;
+  }
+  .mini-time strong {
+    padding: 7px 8px;
+    font-size: .86rem;
+  }
   .side-card {
     display: grid;
     grid-template-columns: 1.1fr .9fr;
@@ -1007,19 +1014,8 @@ pre {
     padding: 5px 8px;
     font-size: .84rem;
   }
-  .two-column,
-  .time-band {
+  .two-column {
     margin: 12px 0;
-  }
-  .time-slots {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 8px;
-  }
-  .time-slots div {
-    padding: 10px;
-  }
-  .time-slots strong {
-    font-size: .95rem;
   }
   .article-list {
     margin-bottom: 22px;
@@ -1034,7 +1030,7 @@ pre {
     font-size: .96rem;
   }
   .hero h1 {
-    font-size: clamp(1.85rem, 8.5vw, 2.25rem);
+    font-size: clamp(1.58rem, 7.1vw, 1.9rem);
   }
 }
 """
