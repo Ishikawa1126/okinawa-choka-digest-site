@@ -106,6 +106,12 @@ def remove_markdown_section(markdown: str, heading: str) -> str:
     return re.sub(pattern, "", markdown).strip()
 
 
+def remove_markdown_sections(markdown: str, headings: list[str]) -> str:
+    for heading in headings:
+        markdown = remove_markdown_section(markdown, heading)
+    return markdown.strip()
+
+
 def section_cards_html(markdown: str, kind: str) -> str:
     sections: list[tuple[str, list[str]]] = []
     current_title = ""
@@ -317,7 +323,14 @@ def render_home(posts: list[tuple[dict[str, str], str]]) -> str:
 
 
 def render_post(meta: dict[str, str], body: str) -> str:
-    public_body = remove_markdown_section(body, "X投稿用テキスト")
+    public_body = remove_markdown_sections(
+        body,
+        ["今日の海況", "潮見", "釣果情報", "X投稿用テキスト"],
+    )
+    catches = split_pipe(meta.get("catch", ""))
+    fish = split_csv(meta.get("fish", ""))
+    catch_items = "".join(f"<li>{html.escape(item)}</li>" for item in catches)
+    fish_items = "".join(f"<li><span>{html.escape(item)}</span></li>" for item in fish)
     description = (
         f"{meta.get('display_date', meta['date'])}の沖縄本島の釣り情報。"
         f"{meta.get('weather', '')}、{meta.get('wind', '')}、波{meta.get('wave', '')}、"
@@ -329,8 +342,24 @@ def render_post(meta: dict[str, str], body: str) -> str:
       <p class="eyebrow">{html.escape(meta.get("display_date", meta["date"]))}</p>
       <h1>{html.escape(meta.get("title", ""))}</h1>
       <div class="post-summary">
-        <div><span>海況</span><strong>{html.escape(meta.get("weather", ""))} / {html.escape(meta.get("wind", ""))} / {html.escape(meta.get("wave", ""))} / 水温 {html.escape(meta.get("sea_temp", "取得中"))}</strong></div>
+        <div><span>おすすめ度</span><strong>{rating_marks(meta.get("rating", "0"))}</strong></div>
+        <div><span>海況</span><strong>{html.escape(meta.get("weather", ""))} / {html.escape(meta.get("wind", ""))} / {html.escape(meta.get("wave", ""))}</strong></div>
+        <div><span>水温</span><strong>{html.escape(meta.get("sea_temp", "取得中"))}</strong></div>
         <div><span>潮見</span><strong>{html.escape(meta.get("tide", ""))} 満潮 {html.escape(meta.get("high_tide", ""))} / 干潮 {html.escape(meta.get("low_tide", ""))}</strong></div>
+        <div><span>おすすめ時間</span><strong>朝 {html.escape(meta.get("morning_time", ""))} / 夕 {html.escape(meta.get("evening_time", ""))}</strong></div>
+        <div><span>注意点</span><strong>{html.escape(meta.get("warning", ""))}</strong></div>
+      </div>
+      <div class="post-detail-grid">
+        <section>
+          <p class="panel-label">Catch Trend</p>
+          <h2>直近釣果</h2>
+          <ul>{catch_items}</ul>
+        </section>
+        <section>
+          <p class="panel-label">Target Fish</p>
+          <h2>今日の狙い目</h2>
+          <ul class="chips">{fish_items}</ul>
+        </section>
       </div>
       {markdown_to_html(public_body)}
     </article>
@@ -835,6 +864,37 @@ main, .page {
   border-radius: 8px;
   padding: 14px;
 }
+.post-detail-grid {
+  display: grid;
+  grid-template-columns: 1.2fr .8fr;
+  gap: 14px;
+  margin: 16px 0 22px;
+}
+.post-detail-grid section {
+  background: rgba(255,255,255,.92);
+  border: 1px solid rgba(5,28,49,.08);
+  border-radius: 8px;
+  padding: 16px;
+  box-shadow: 0 14px 36px rgba(3,34,50,.09);
+}
+.post-detail-grid h2 {
+  border-left: 0;
+  padding-left: 0;
+  margin: 0 0 10px;
+  font-size: 1.14rem;
+}
+.post-detail-grid ul:not(.chips) {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.post-detail-grid ul:not(.chips) li {
+  background: #f6fbff;
+  border-left: 4px solid var(--teal);
+  border-radius: 8px;
+  margin: 8px 0;
+  padding: 9px 11px;
+}
 pre {
   max-width: 100%;
   overflow-x: auto;
@@ -885,6 +945,34 @@ pre {
   .today-layout, .two-column, .post-summary {
     grid-template-columns: 1fr;
     gap: 12px;
+  }
+  .post-summary {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    margin: 12px 0;
+  }
+  .post-summary div {
+    padding: 9px 10px;
+  }
+  .post-summary div:nth-child(4),
+  .post-summary div:nth-child(5),
+  .post-summary div:nth-child(6) {
+    grid-column: 1 / -1;
+  }
+  .post-detail-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+    margin: 12px 0 18px;
+  }
+  .post-detail-grid section {
+    padding: 12px;
+  }
+  .post-detail-grid h2 {
+    font-size: 1.05rem;
+  }
+  .post-detail-grid ul:not(.chips) li {
+    padding: 7px 9px;
+    font-size: .88rem;
   }
   .card-grid,
   .fish-grid,
