@@ -267,10 +267,6 @@ def render_home(posts: list[tuple[dict[str, str], str]]) -> str:
         <h1>沖縄釣果ダイジェスト</h1>
         <p>天気・風・波・潮見・釣果傾向・狙い目を、釣行前に見やすく整理します。</p>
       </div>
-      <div class="hero-badge">
-        <span>Today's Digest</span>
-        <strong>{html.escape(latest.get("display_date", latest["date"]))}</strong>
-      </div>
     </section>
 
     <section class="today-layout">
@@ -705,9 +701,8 @@ main, .page {
   margin: 28px 0 18px;
   min-height: 455px;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-columns: minmax(0, 1fr);
   align-items: end;
-  gap: 26px;
   padding: clamp(24px, 5vw, 46px);
   border-radius: 8px;
   color: white;
@@ -748,29 +743,6 @@ main, .page {
   max-width: 780px;
   position: relative;
   z-index: 1;
-}
-.hero-badge {
-  align-self: start;
-  background: rgba(255,255,255,.93);
-  color: #073b67;
-  border: 1px solid rgba(255,255,255,.7);
-  border-radius: 8px;
-  padding: 16px 18px;
-  min-width: 205px;
-  box-shadow: 0 10px 30px rgba(0,0,0,.18);
-  position: relative;
-  z-index: 1;
-}
-.hero-badge span {
-  display: block;
-  color: var(--teal);
-  font-size: .78rem;
-  font-weight: 800;
-  text-transform: uppercase;
-}
-.hero-badge strong {
-  display: block;
-  font-size: 1.2rem;
 }
 .eyebrow {
   color: var(--teal);
@@ -1263,10 +1235,6 @@ pre {
   .hero {
     grid-template-columns: 1fr;
   }
-  .hero-badge {
-    align-self: end;
-    width: fit-content;
-  }
 }
 @media (max-width: 800px) {
   main, .page {
@@ -1366,14 +1334,6 @@ pre {
     font-size: .82rem;
     line-height: 1.45;
     margin-bottom: 4px;
-  }
-  .hero-badge {
-    width: 100%;
-    min-width: 0;
-    padding: 10px 12px;
-  }
-  .hero-badge strong {
-    font-size: 1rem;
   }
   .main-card, .side-card, .panel, .article-list {
     padding: 14px;
