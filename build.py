@@ -310,7 +310,10 @@ def render_home(posts: list[tuple[dict[str, str], str]]) -> str:
     </section>
 
     <section class="article-list">
-      <h2>最新記事一覧</h2>
+      <div class="article-list-header">
+        <h2>最新記事一覧</h2>
+        <a href="archive.html">すべて見る</a>
+      </div>
       <ul>{article_links}</ul>
     </section>
   </main>
@@ -372,6 +375,44 @@ def render_post(meta: dict[str, str], body: str) -> str:
         description=description,
         url_path=post_url(meta),
         image_path=DEFAULT_OG_IMAGE,
+    )
+
+
+def render_archive(posts: list[tuple[dict[str, str], str]]) -> str:
+    cards = "\n".join(
+        f"""
+        <article class="archive-card">
+          <a href="{post_url(meta)}">
+            <span>{html.escape(meta.get("display_date", meta["date"]))}</span>
+            <h2>{html.escape(meta.get("title", meta["date"]))}</h2>
+            <p>{html.escape(meta.get("weather", ""))} / {html.escape(meta.get("wind", ""))} / 波 {html.escape(meta.get("wave", ""))}</p>
+            <dl>
+              <div><dt>潮</dt><dd>{html.escape(meta.get("tide", ""))}</dd></div>
+              <div><dt>水温</dt><dd>{html.escape(meta.get("sea_temp", "取得中"))}</dd></div>
+              <div><dt>おすすめ</dt><dd>{rating_marks(meta.get("rating", "0"))}</dd></div>
+            </dl>
+          </a>
+        </article>
+"""
+        for meta, _ in posts
+    )
+    content = f"""
+  <main class="page">
+    <section class="page-heading">
+      <p class="eyebrow">Archive</p>
+      <h1>記事一覧</h1>
+      <p>毎朝更新している沖縄本島の釣り情報を日付順にまとめています。</p>
+    </section>
+    <section class="archive-grid">
+      {cards}
+    </section>
+  </main>
+"""
+    return base_html(
+        "記事一覧",
+        content,
+        description="沖縄釣果ダイジェストの過去記事一覧。毎朝更新している沖縄本島の釣り情報を日付順に確認できます。",
+        url_path="archive.html",
     )
 
 
@@ -739,6 +780,21 @@ main, .page {
   background: #fffdfb;
 }
 .article-list { margin-bottom: 34px; }
+.article-list-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+.article-list-header h2 {
+  margin: 0;
+}
+.article-list-header a {
+  color: var(--teal);
+  font-weight: 800;
+  white-space: nowrap;
+}
 .article-list ul {
   margin: 0;
   padding-left: 1.2rem;
@@ -747,6 +803,18 @@ main, .page {
   margin: 8px 0;
 }
 .page { padding: 30px 0 50px; }
+.page-heading {
+  margin: 4px 0 24px;
+}
+.page-heading h1 {
+  font-size: clamp(2.1rem, 6vw, 3.8rem);
+  margin: 0 0 10px;
+  line-height: 1.08;
+}
+.page-heading p {
+  max-width: 720px;
+  margin: 0;
+}
 .article {
   background: transparent;
   border: 0;
@@ -894,6 +962,60 @@ main, .page {
   border-radius: 8px;
   margin: 8px 0;
   padding: 9px 11px;
+}
+.archive-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+.archive-card a {
+  display: block;
+  height: 100%;
+  color: inherit;
+  text-decoration: none;
+  background: rgba(255,255,255,.92);
+  border: 1px solid rgba(5,28,49,.08);
+  border-radius: 8px;
+  padding: 16px;
+  box-shadow: 0 14px 36px rgba(3,34,50,.09);
+}
+.archive-card span {
+  display: block;
+  color: var(--teal);
+  font-size: .82rem;
+  font-weight: 800;
+  margin-bottom: 6px;
+}
+.archive-card h2 {
+  border-left: 0;
+  padding-left: 0;
+  margin: 0 0 8px;
+  font-size: 1.16rem;
+}
+.archive-card p {
+  margin: 0 0 12px;
+  color: var(--muted);
+}
+.archive-card dl {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin: 0;
+}
+.archive-card dl div {
+  background: #f6fbff;
+  border-radius: 8px;
+  padding: 8px;
+}
+.archive-card dt {
+  color: var(--muted);
+  font-size: .74rem;
+  font-weight: 700;
+}
+.archive-card dd {
+  margin: 2px 0 0;
+  font-weight: 800;
+  overflow-wrap: anywhere;
 }
 pre {
   max-width: 100%;
@@ -1108,6 +1230,38 @@ pre {
   .article-list {
     margin-bottom: 22px;
   }
+  .article-list-header {
+    margin-bottom: 6px;
+  }
+  .article-list-header a {
+    font-size: .86rem;
+  }
+  .page-heading {
+    margin-bottom: 16px;
+  }
+  .page-heading h1 {
+    font-size: clamp(1.8rem, 8vw, 2.2rem);
+  }
+  .archive-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+  .archive-card a {
+    padding: 12px;
+  }
+  .archive-card h2 {
+    font-size: 1.02rem;
+  }
+  .archive-card dl {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 6px;
+  }
+  .archive-card dl div {
+    padding: 7px;
+  }
+  .archive-card dd {
+    font-size: .86rem;
+  }
   .site-footer {
     padding: 16px;
     font-size: .9rem;
@@ -1148,6 +1302,7 @@ Sitemap: {absolute_url("sitemap.xml")}
 def write_sitemap(posts: list[tuple[dict[str, str], str]]) -> None:
     urls = [
         ("", ""),
+        ("archive.html", ""),
         ("areas.html", ""),
         ("fish.html", ""),
         ("beginner.html", ""),
@@ -1192,6 +1347,7 @@ def build() -> None:
         raise RuntimeError("No posts found in content/posts")
 
     (SITE_DIR / "index.html").write_text(render_home(posts), encoding="utf-8")
+    (SITE_DIR / "archive.html").write_text(render_archive(posts), encoding="utf-8")
     (SITE_DIR / "areas.html").write_text(render_page(PAGES_DIR / "areas.md", "areas"), encoding="utf-8")
     (SITE_DIR / "fish.html").write_text(render_page(PAGES_DIR / "fish.md", "fish"), encoding="utf-8")
     (SITE_DIR / "beginner.html").write_text(render_page(PAGES_DIR / "beginner.md", "beginner"), encoding="utf-8")
