@@ -4,6 +4,7 @@ import datetime as dt
 import json
 import os
 import re
+import time
 from pathlib import Path
 from urllib.parse import urlencode
 from urllib.request import urlopen
@@ -17,10 +18,18 @@ NAHA = {"name": "那覇", "lat": 26.2124, "lon": 127.6792}
 JMA_NAHA_TIDE_URL = "https://www.data.jma.go.jp/kaiyou/db/tide/suisan/suisan.php?stn=NH"
 
 
-def fetch_json(base_url: str, params: dict[str, str | int | float]) -> dict:
+def fetch_json(base_url: str, params: dict[str, str | int | float], retries: int = 3) -> dict:
     url = f"{base_url}?{urlencode(params)}"
-    with urlopen(url, timeout=30) as response:
-        return json.loads(response.read().decode("utf-8"))
+    last_error: Exception | None = None
+    for attempt in range(retries):
+        try:
+            with urlopen(url, timeout=30) as response:
+                return json.loads(response.read().decode("utf-8"))
+        except Exception as error:
+            last_error = error
+            if attempt < retries - 1:
+                time.sleep(2 * (attempt + 1))
+    raise RuntimeError(f"Failed to fetch JSON after {retries} attempts: {url}") from last_error
 
 
 def fmt_date(date_value: dt.date) -> str:
@@ -35,49 +44,71 @@ def nearest_hour_index(times: list[str], target: dt.datetime) -> int:
 def get_weather() -> dict[str, str | float]:
     now = dt.datetime.now(JST)
     target = now.replace(minute=0, second=0, microsecond=0) + dt.timedelta(hours=3)
+    data_warning = ""
 
-    weather = fetch_json(
-        "https://api.open-meteo.com/v1/forecast",
-        {
-            "latitude": NAHA["lat"],
-            "longitude": NAHA["lon"],
-            "hourly": "temperature_2m,wind_speed_10m,precipitation",
-            "forecast_days": 1,
-            "timezone": "Asia/Tokyo",
-            "wind_speed_unit": "ms",
-        },
-    )
-    marine = fetch_json(
-        "https://marine-api.open-meteo.com/v1/marine",
-        {
-            "latitude": NAHA["lat"],
-            "longitude": NAHA["lon"],
-            "hourly": "wave_height,sea_surface_temperature",
-            "forecast_days": 1,
-            "timezone": "Asia/Tokyo",
-            "cell_selection": "sea",
-        },
-    )
+    try:
+        weather = fetch_json(
+            "https://api.open-meteo.com/v1/forecast",
+            {
+                "latitude": NAHA["lat"],
+                "longitude": NAHA["lon"],
+                "hourly": "temperature_2m,wind_speed_10m,precipitation",
+                "forecast_days": 1,
+                "timezone": "Asia/Tokyo",
+                "wind_speed_unit": "ms",
+            },
+        )
+        weather_idx = nearest_hour_index(weather["hourly"]["time"], target)
+        wind = float(weather["hourly"]["wind_speed_10m"][weather_idx])
+        rain = float(weather["hourly"]["precipitation"][weather_idx])
+        temp = float(weather["hourly"]["temperature_2m"][weather_idx])
+        weather_text = weather_label(rain, wind)
+        wind_text = wind_label(wind)
+    except Exception as error:
+        print(f"Weather fetch failed, using safe fallback: {error}")
+        data_warning = "一部データを取得できませんでした。"
+        wind = 99.0
+        rain = 0.0
+        temp = 0.0
+        weather_text = "取得中"
+        wind_text = "取得中"
 
-    weather_idx = nearest_hour_index(weather["hourly"]["time"], target)
-    marine_idx = nearest_hour_index(marine["hourly"]["time"], target)
-
-    wind = float(weather["hourly"]["wind_speed_10m"][weather_idx])
-    rain = float(weather["hourly"]["precipitation"][weather_idx])
-    temp = float(weather["hourly"]["temperature_2m"][weather_idx])
-    wave = float(marine["hourly"]["wave_height"][marine_idx])
-    sea_temp = float(marine["hourly"]["sea_surface_temperature"][marine_idx])
+    try:
+        marine = fetch_json(
+            "https://marine-api.open-meteo.com/v1/marine",
+            {
+                "latitude": NAHA["lat"],
+                "longitude": NAHA["lon"],
+                "hourly": "wave_height,sea_surface_temperature",
+                "forecast_days": 1,
+                "timezone": "Asia/Tokyo",
+                "cell_selection": "sea",
+            },
+        )
+        marine_idx = nearest_hour_index(marine["hourly"]["time"], target)
+        wave = float(marine["hourly"]["wave_height"][marine_idx])
+        sea_temp = float(marine["hourly"]["sea_surface_temperature"][marine_idx])
+        wave_text = wave_label(wave)
+        sea_temp_text = f"{sea_temp:.1f}℃"
+    except Exception as error:
+        print(f"Marine fetch failed, using safe fallback: {error}")
+        data_warning = "一部データを取得できませんでした。"
+        wave = 99.0
+        sea_temp = 0.0
+        wave_text = "取得中"
+        sea_temp_text = "取得中"
 
     return {
-        "weather": weather_label(rain, wind),
-        "wind_label": wind_label(wind),
-        "wave_label": wave_label(wave),
-        "sea_temp_label": f"{sea_temp:.1f}℃",
+        "weather": weather_text,
+        "wind_label": wind_text,
+        "wave_label": wave_text,
+        "sea_temp_label": sea_temp_text,
         "wind": wind,
         "rain": rain,
         "temp": temp,
         "wave": wave,
         "sea_temp": sea_temp,
+        "data_warning": data_warning,
     }
 
 
@@ -118,6 +149,8 @@ def rating(weather: dict[str, str | float]) -> int:
 
 
 def warning_text(weather: dict[str, str | float]) -> str:
+    if weather.get("data_warning"):
+        return "一部データを取得できませんでした。最新の気象・海況を確認してから釣行判断をしてください。"
     wave = float(weather["wave"])
     wind = float(weather["wind"])
     if wave >= 1.5 or wind >= 9:
@@ -140,17 +173,25 @@ def get_tide() -> dict[str, str]:
     except Exception as error:
         print(f"JMA tide fetch failed, fallback to marine estimate: {error}")
 
-    data = fetch_json(
-        "https://marine-api.open-meteo.com/v1/marine",
-        {
-            "latitude": NAHA["lat"],
-            "longitude": NAHA["lon"],
-            "hourly": "sea_level_height_msl",
-            "forecast_days": 1,
-            "timezone": "Asia/Tokyo",
-            "cell_selection": "sea",
-        },
-    )
+    try:
+        data = fetch_json(
+            "https://marine-api.open-meteo.com/v1/marine",
+            {
+                "latitude": NAHA["lat"],
+                "longitude": NAHA["lon"],
+                "hourly": "sea_level_height_msl",
+                "forecast_days": 1,
+                "timezone": "Asia/Tokyo",
+                "cell_selection": "sea",
+            },
+        )
+    except Exception as error:
+        print(f"Marine tide estimate failed, using tide-cycle fallback: {error}")
+        return {
+            "tide": tide_cycle_name(today),
+            "high_tide": "取得中",
+            "low_tide": "取得中",
+        }
     times = data.get("hourly", {}).get("time", [])
     levels = data.get("hourly", {}).get("sea_level_height_msl", [])
     highs: list[str] = []
