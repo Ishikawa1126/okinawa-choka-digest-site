@@ -423,6 +423,7 @@ def render_shops() -> str:
             "address": "沖縄県那覇市 港町2-9-4",
             "tel": "098-860-1277",
             "official": "https://www.sealand.jp/",
+            "group": "那覇・南部",
             "tags": ["那覇", "港町", "釣具"],
         },
         {
@@ -431,6 +432,7 @@ def render_shops() -> str:
             "address": "沖縄県那覇市 曙1-14-22",
             "tel": "098-866-8080",
             "official": "https://www.sannory.com/",
+            "group": "那覇・南部",
             "tags": ["那覇", "曙", "釣具"],
         },
         {
@@ -439,6 +441,7 @@ def render_shops() -> str:
             "address": "沖縄県島尻郡南風原町 兼城200",
             "tel": "098-889-4870",
             "official": "https://www.sealand.jp/",
+            "group": "那覇・南部",
             "tags": ["南部", "南風原", "釣具"],
         },
         {
@@ -447,6 +450,7 @@ def render_shops() -> str:
             "address": "沖縄県宜野湾市 真志喜2-8-10 マーロハウジング102",
             "tel": "098-988-9091",
             "official": "",
+            "group": "中部",
             "tags": ["宜野湾", "買取", "中古釣具"],
         },
         {
@@ -455,6 +459,7 @@ def render_shops() -> str:
             "address": "沖縄県宜野湾市 宇地泊74",
             "tel": "098-897-2035",
             "official": "https://www.sealand.jp/",
+            "group": "中部",
             "tags": ["中部", "宜野湾", "釣具"],
         },
         {
@@ -463,6 +468,7 @@ def render_shops() -> str:
             "address": "沖縄県島尻郡南風原町 兼城263",
             "tel": "098-888-2420",
             "official": "",
+            "group": "那覇・南部",
             "tags": ["南部", "南風原", "釣具"],
         },
         {
@@ -471,6 +477,7 @@ def render_shops() -> str:
             "address": "沖縄県浦添市 字牧港1196",
             "tel": "098-879-1887",
             "official": "https://www.tackleberry.co.jp/",
+            "group": "中部",
             "tags": ["浦添", "中古釣具", "ルアー"],
         },
         {
@@ -479,6 +486,7 @@ def render_shops() -> str:
             "address": "沖縄県うるま市 豊原1-1",
             "tel": "098-982-6777",
             "official": "https://fishing-step.com/",
+            "group": "中部",
             "tags": ["中部", "釣果情報", "釣具"],
         },
         {
@@ -487,6 +495,7 @@ def render_shops() -> str:
             "address": "沖縄県中頭郡北谷町 美浜2-1-1",
             "tel": "098-936-1116",
             "official": "https://www.sealand.jp/",
+            "group": "中部",
             "tags": ["中部", "北谷", "釣具"],
         },
         {
@@ -495,6 +504,7 @@ def render_shops() -> str:
             "address": "沖縄県中頭郡北谷町美浜 2-8-1",
             "tel": "098-936-1639",
             "official": "https://www.sannory.com/",
+            "group": "中部",
             "tags": ["中部", "北谷", "釣具"],
         },
         {
@@ -503,6 +513,7 @@ def render_shops() -> str:
             "address": "沖縄県うるま市 塩屋507番地",
             "tel": "098-987-8810",
             "official": "https://www.sealand.jp/",
+            "group": "中部",
             "tags": ["中部", "うるま", "釣具"],
         },
         {
@@ -511,27 +522,34 @@ def render_shops() -> str:
             "address": "沖縄県名護市 宮里871-3",
             "tel": "0980-54-4075",
             "official": "https://www.sealand.jp/",
+            "group": "北部",
             "tags": ["北部", "名護", "釣具"],
         },
     ]
-    cards = "\n".join(
-        (
-            map_url := f"https://www.google.com/maps/search/?api=1&query={quote_plus(shop['name'] + ' ' + shop['address'])}",
-            official_link := (
-                f'<a href="{html.escape(shop["official"])}" target="_blank" rel="noopener noreferrer">公式サイト</a>'
-                if shop["official"]
-                else ""
-            ),
-            f"""
+    groups = [
+        ("那覇・南部", "那覇市、南風原町など。出発前の餌・仕掛け準備に使いやすいエリアです。"),
+        ("中部", "宜野湾、浦添、北谷、うるま方面。西海岸・中部エリアの釣行前後に立ち寄りやすい店舗です。"),
+        ("北部", "名護方面。北部釣行の前後に確認しやすい店舗です。"),
+    ]
+
+    def shop_card(shop: dict[str, str | list[str]]) -> str:
+        map_url = f"https://www.google.com/maps/search/?api=1&query={quote_plus(str(shop['name']) + ' ' + str(shop['address']))}"
+        official_link = (
+            f'<a href="{html.escape(str(shop["official"]))}" target="_blank" rel="noopener noreferrer">公式サイト</a>'
+            if shop["official"]
+            else ""
+        )
+        tags = "".join(f"<li><span>{html.escape(tag)}</span></li>" for tag in shop["tags"])
+        return f"""
         <article class="shop-card">
           <div>
-            <p class="panel-label">{html.escape(shop["area"])}</p>
-            <h2>{html.escape(shop["name"])}</h2>
+            <p class="panel-label">{html.escape(str(shop["area"]))}</p>
+            <h2>{html.escape(str(shop["name"]))}</h2>
             <dl class="shop-meta">
-              <div><dt>住所</dt><dd>{html.escape(shop["address"])}</dd></div>
-              <div><dt>電話</dt><dd>{html.escape(shop["tel"])}</dd></div>
+              <div><dt>住所</dt><dd>{html.escape(str(shop["address"]))}</dd></div>
+              <div><dt>電話</dt><dd>{html.escape(str(shop["tel"]))}</dd></div>
             </dl>
-            <ul class="chips">{"".join(f"<li><span>{html.escape(tag)}</span></li>" for tag in shop["tags"])}</ul>
+            <ul class="chips">{tags}</ul>
           </div>
           <div class="shop-links">
             <a href="{html.escape(map_url)}" target="_blank" rel="noopener noreferrer">Googleマップ</a>
@@ -539,8 +557,22 @@ def render_shops() -> str:
           </div>
         </article>
 """
-        )[-1]
-        for shop in shops
+    sections = "\n".join(
+        f"""
+      <section class="shop-area-section">
+        <div class="shop-area-heading">
+          <div>
+            <p class="panel-label">Area</p>
+            <h2>{html.escape(group_name)}</h2>
+          </div>
+          <p>{html.escape(description)}</p>
+        </div>
+        <div class="shop-grid">
+          {"".join(shop_card(shop) for shop in shops if shop["group"] == group_name)}
+        </div>
+      </section>
+"""
+        for group_name, description in groups
     )
     content = f"""
   <main class="page">
@@ -550,9 +582,7 @@ def render_shops() -> str:
       <p>釣行前の道具準備、餌の購入、現地の釣果相談に使いやすいリンク集です。店舗情報は釣りビジョンの全国釣具店情報を参考にし、Googleマップで確認しやすい形に整理しています。</p>
       <p class="source-note">参考：<a href="{source_url}" target="_blank" rel="noopener noreferrer">釣りビジョン 全国釣具店情報 沖縄県の釣具店一覧</a></p>
     </section>
-    <section class="shop-grid">
-      {cards}
-    </section>
+    {sections}
   </main>
 """
     return base_html(
@@ -1154,6 +1184,29 @@ main, .page {
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 14px;
 }
+.shop-area-section {
+  margin: 0 0 26px;
+}
+.shop-area-heading {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 18px;
+  margin: 0 0 12px;
+  padding: 0 2px;
+}
+.shop-area-heading h2 {
+  border-left: 0;
+  padding-left: 0;
+  margin: 0;
+  font-size: 1.5rem;
+}
+.shop-area-heading > p {
+  max-width: 620px;
+  margin: 0;
+  color: var(--muted);
+  font-size: .95rem;
+}
 .shop-card {
   display: flex;
   flex-direction: column;
@@ -1451,6 +1504,20 @@ pre {
   .shop-grid {
     grid-template-columns: 1fr;
     gap: 10px;
+  }
+  .shop-area-section {
+    margin-bottom: 22px;
+  }
+  .shop-area-heading {
+    display: block;
+    margin-bottom: 10px;
+  }
+  .shop-area-heading h2 {
+    font-size: 1.25rem;
+  }
+  .shop-area-heading > p {
+    font-size: .86rem;
+    margin-top: 5px;
   }
   .shop-card {
     padding: 13px;
