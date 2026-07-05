@@ -426,7 +426,7 @@ def render_shops() -> str:
             "area": "那覇市",
             "address": "沖縄県那覇市 港町2-9-4",
             "tel": "098-860-1277",
-            "official": "",
+            "official": "https://www.sealand.jp/",
             "tags": ["那覇", "港町", "釣具"],
         },
         {
@@ -442,7 +442,7 @@ def render_shops() -> str:
             "area": "南風原町",
             "address": "沖縄県島尻郡南風原町 兼城200",
             "tel": "098-889-4870",
-            "official": "",
+            "official": "https://www.sealand.jp/",
             "tags": ["南部", "南風原", "釣具"],
         },
         {
@@ -458,7 +458,7 @@ def render_shops() -> str:
             "area": "宜野湾市",
             "address": "沖縄県宜野湾市 宇地泊74",
             "tel": "098-897-2035",
-            "official": "",
+            "official": "https://www.sealand.jp/",
             "tags": ["中部", "宜野湾", "釣具"],
         },
         {
@@ -490,7 +490,7 @@ def render_shops() -> str:
             "area": "北谷町",
             "address": "沖縄県中頭郡北谷町 美浜2-1-1",
             "tel": "098-936-1116",
-            "official": "",
+            "official": "https://www.sealand.jp/",
             "tags": ["中部", "北谷", "釣具"],
         },
         {
@@ -506,7 +506,7 @@ def render_shops() -> str:
             "area": "うるま市",
             "address": "沖縄県うるま市 塩屋507番地",
             "tel": "098-987-8810",
-            "official": "",
+            "official": "https://www.sealand.jp/",
             "tags": ["中部", "うるま", "釣具"],
         },
         {
@@ -514,7 +514,7 @@ def render_shops() -> str:
             "area": "名護市",
             "address": "沖縄県名護市 宮里871-3",
             "tel": "0980-54-4075",
-            "official": "",
+            "official": "https://www.sealand.jp/",
             "tags": ["北部", "名護", "釣具"],
         },
     ]
