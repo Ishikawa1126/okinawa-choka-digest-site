@@ -186,6 +186,7 @@ def base_html(
         ("areas.html", "エリア別", "areas"),
         ("fish.html", "魚種別", "fish"),
         ("beginner.html", "初心者ガイド", "beginner"),
+        ("shops.html", "釣具店", "shops"),
     ]
     nav_html = "\n".join(
         f'<a class="{"active" if key == current else ""}" href="{base_path}{href}">{label}</a>'
@@ -413,6 +414,71 @@ def render_archive(posts: list[tuple[dict[str, str], str]]) -> str:
         content,
         description="沖縄釣果ダイジェストの過去記事一覧。毎朝更新している沖縄本島の釣り情報を日付順に確認できます。",
         url_path="archive.html",
+    )
+
+
+def render_shops() -> str:
+    shops = [
+        {
+            "name": "フィッシングステップ",
+            "area": "那覇・中部・北部",
+            "summary": "釣果情報やダービー情報も確認しやすい、沖縄本島の大型釣具店。那覇店、具志川店、名護店など釣行エリアに合わせて使いやすいお店です。",
+            "official": "https://fishing-step.com/",
+            "map": "https://www.google.com/maps/search/?api=1&query=%E3%83%95%E3%82%A3%E3%83%83%E3%82%B7%E3%83%B3%E3%82%B0%E3%82%B9%E3%83%86%E3%83%83%E3%83%97%20%E6%B2%96%E7%B8%84",
+            "tags": ["釣果情報", "複数店舗", "初心者相談"],
+        },
+        {
+            "name": "フィッシング王国サンノリー",
+            "area": "南部・中部",
+            "summary": "沖縄の釣具店として知られるショップ。餌釣り、ルアー、沖縄らしい対象魚の道具探しに使いやすいリンクとして掲載します。",
+            "official": "https://www.sannory.com/",
+            "map": "https://www.google.com/maps/search/?api=1&query=%E3%82%B5%E3%83%B3%E3%83%8E%E3%83%AA%E3%83%BC%20%E6%B2%96%E7%B8%84%20%E9%87%A3%E5%85%B7",
+            "tags": ["釣具", "餌釣り", "ルアー"],
+        },
+        {
+            "name": "YOSEMIYA",
+            "area": "那覇周辺",
+            "summary": "釣具だけでなく、フィッシングやマリンレジャー関連の相談先としても使いやすいショップ。船釣りや観光で釣りを楽しみたい人にも向きます。",
+            "official": "https://www.yosemiya.jp/",
+            "map": "https://www.google.com/maps/search/?api=1&query=YOSEMIYA%20%E6%B2%96%E7%B8%84",
+            "tags": ["船釣り", "マリンレジャー", "観光釣り"],
+        },
+    ]
+    cards = "\n".join(
+        f"""
+        <article class="shop-card">
+          <div>
+            <p class="panel-label">{html.escape(shop["area"])}</p>
+            <h2>{html.escape(shop["name"])}</h2>
+            <p>{html.escape(shop["summary"])}</p>
+            <ul class="chips">{"".join(f"<li><span>{html.escape(tag)}</span></li>" for tag in shop["tags"])}</ul>
+          </div>
+          <div class="shop-links">
+            <a href="{html.escape(shop["official"])}" target="_blank" rel="noopener noreferrer">公式サイト</a>
+            <a href="{html.escape(shop["map"])}" target="_blank" rel="noopener noreferrer">Googleマップ</a>
+          </div>
+        </article>
+"""
+        for shop in shops
+    )
+    content = f"""
+  <main class="page">
+    <section class="page-heading">
+      <p class="eyebrow">Tackle Shops</p>
+      <h1>沖縄の釣具店リンク</h1>
+      <p>釣行前の道具準備、餌の購入、現地の釣果相談に使いやすいリンク集です。営業時間や在庫は変わるため、来店前に公式サイトや地図で最新情報を確認してください。</p>
+    </section>
+    <section class="shop-grid">
+      {cards}
+    </section>
+  </main>
+"""
+    return base_html(
+        "沖縄の釣具店リンク",
+        content,
+        "shops",
+        description="沖縄本島で釣具や餌を準備したい方向けの釣具店リンク集。公式サイトとGoogleマップへのリンクをまとめています。",
+        url_path="shops.html",
     )
 
 
@@ -1017,6 +1083,52 @@ main, .page {
   font-weight: 800;
   overflow-wrap: anywhere;
 }
+.shop-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+.shop-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 14px;
+  background: rgba(255,255,255,.92);
+  border: 1px solid rgba(5,28,49,.08);
+  border-radius: 8px;
+  padding: 18px;
+  box-shadow: 0 14px 36px rgba(3,34,50,.09);
+}
+.shop-card h2 {
+  border-left: 0;
+  padding-left: 0;
+  margin: 0 0 10px;
+  font-size: 1.22rem;
+}
+.shop-card p {
+  margin: 0 0 14px;
+}
+.shop-links {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+.shop-links a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 42px;
+  border-radius: 8px;
+  background: #061f35;
+  color: white;
+  font-weight: 800;
+  text-decoration: none;
+}
+.shop-links a + a {
+  background: #e7f7f3;
+  color: #07674f;
+  border: 1px solid #b9ead7;
+}
 pre {
   max-width: 100%;
   overflow-x: auto;
@@ -1262,6 +1374,20 @@ pre {
   .archive-card dd {
     font-size: .86rem;
   }
+  .shop-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+  .shop-card {
+    padding: 13px;
+  }
+  .shop-card h2 {
+    font-size: 1.08rem;
+  }
+  .shop-links a {
+    min-height: 38px;
+    font-size: .88rem;
+  }
   .site-footer {
     padding: 16px;
     font-size: .9rem;
@@ -1306,6 +1432,7 @@ def write_sitemap(posts: list[tuple[dict[str, str], str]]) -> None:
         ("areas.html", ""),
         ("fish.html", ""),
         ("beginner.html", ""),
+        ("shops.html", ""),
     ]
     urls.extend((post_url(meta), meta.get("date", "")) for meta, _ in posts)
 
@@ -1351,6 +1478,7 @@ def build() -> None:
     (SITE_DIR / "areas.html").write_text(render_page(PAGES_DIR / "areas.md", "areas"), encoding="utf-8")
     (SITE_DIR / "fish.html").write_text(render_page(PAGES_DIR / "fish.md", "fish"), encoding="utf-8")
     (SITE_DIR / "beginner.html").write_text(render_page(PAGES_DIR / "beginner.md", "beginner"), encoding="utf-8")
+    (SITE_DIR / "shops.html").write_text(render_shops(), encoding="utf-8")
     write_robots()
     write_sitemap(posts)
 
