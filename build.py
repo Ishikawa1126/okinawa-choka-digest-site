@@ -4,6 +4,7 @@ import html
 import re
 import shutil
 from pathlib import Path
+from urllib.parse import quote_plus
 
 
 ROOT = Path(__file__).parent
@@ -418,47 +419,131 @@ def render_archive(posts: list[tuple[dict[str, str], str]]) -> str:
 
 
 def render_shops() -> str:
+    source_url = "https://sp.fishing-v.jp/shop/list.php?to_dou_fu_ken_s=47&submit=1"
     shops = [
         {
-            "name": "フィッシングステップ",
-            "area": "那覇・中部・北部",
-            "summary": "釣果情報やダービー情報も確認しやすい、沖縄本島の大型釣具店。那覇店、具志川店、名護店など釣行エリアに合わせて使いやすいお店です。",
-            "official": "https://fishing-step.com/",
-            "map": "https://www.google.com/maps/search/?api=1&query=%E3%83%95%E3%82%A3%E3%83%83%E3%82%B7%E3%83%B3%E3%82%B0%E3%82%B9%E3%83%86%E3%83%83%E3%83%97%20%E6%B2%96%E7%B8%84",
-            "tags": ["釣果情報", "複数店舗", "初心者相談"],
+            "name": "シーランド 那覇店",
+            "area": "那覇市",
+            "address": "沖縄県那覇市 港町2-9-4",
+            "tel": "098-860-1277",
+            "official": "",
+            "tags": ["那覇", "港町", "釣具"],
         },
         {
-            "name": "フィッシング王国サンノリー",
-            "area": "南部・中部",
-            "summary": "沖縄の釣具店として知られるショップ。餌釣り、ルアー、沖縄らしい対象魚の道具探しに使いやすいリンクとして掲載します。",
+            "name": "サンノリー2 曙店",
+            "area": "那覇市",
+            "address": "沖縄県那覇市 曙1-14-22",
+            "tel": "098-866-8080",
             "official": "https://www.sannory.com/",
-            "map": "https://www.google.com/maps/search/?api=1&query=%E3%82%B5%E3%83%B3%E3%83%8E%E3%83%AA%E3%83%BC%20%E6%B2%96%E7%B8%84%20%E9%87%A3%E5%85%B7",
-            "tags": ["釣具", "餌釣り", "ルアー"],
+            "tags": ["那覇", "曙", "釣具"],
         },
         {
-            "name": "YOSEMIYA",
-            "area": "那覇周辺",
-            "summary": "釣具だけでなく、フィッシングやマリンレジャー関連の相談先としても使いやすいショップ。船釣りや観光で釣りを楽しみたい人にも向きます。",
-            "official": "https://www.yosemiya.jp/",
-            "map": "https://www.google.com/maps/search/?api=1&query=YOSEMIYA%20%E6%B2%96%E7%B8%84",
-            "tags": ["船釣り", "マリンレジャー", "観光釣り"],
+            "name": "シーランド 南風原店",
+            "area": "南風原町",
+            "address": "沖縄県島尻郡南風原町 兼城200",
+            "tel": "098-889-4870",
+            "official": "",
+            "tags": ["南部", "南風原", "釣具"],
+        },
+        {
+            "name": "釣具買取のイエローフィッシュ 沖縄コンベンション通り店",
+            "area": "宜野湾市",
+            "address": "沖縄県宜野湾市 真志喜2-8-10 マーロハウジング102",
+            "tel": "098-988-9091",
+            "official": "",
+            "tags": ["宜野湾", "買取", "中古釣具"],
+        },
+        {
+            "name": "シーランド 宜野湾店",
+            "area": "宜野湾市",
+            "address": "沖縄県宜野湾市 宇地泊74",
+            "tel": "098-897-2035",
+            "official": "",
+            "tags": ["中部", "宜野湾", "釣具"],
+        },
+        {
+            "name": "マンモス 南風原店",
+            "area": "南風原町",
+            "address": "沖縄県島尻郡南風原町 兼城263",
+            "tel": "098-888-2420",
+            "official": "",
+            "tags": ["南部", "南風原", "釣具"],
+        },
+        {
+            "name": "タックルベリー 沖縄浦添58号店",
+            "area": "浦添市",
+            "address": "沖縄県浦添市 字牧港1196",
+            "tel": "098-879-1887",
+            "official": "https://www.tackleberry.co.jp/",
+            "tags": ["浦添", "中古釣具", "ルアー"],
+        },
+        {
+            "name": "フィッシングステップ 具志川店",
+            "area": "うるま市",
+            "address": "沖縄県うるま市 豊原1-1",
+            "tel": "098-982-6777",
+            "official": "https://fishing-step.com/",
+            "tags": ["中部", "釣果情報", "釣具"],
+        },
+        {
+            "name": "シーランド 北谷店",
+            "area": "北谷町",
+            "address": "沖縄県中頭郡北谷町 美浜2-1-1",
+            "tel": "098-936-1116",
+            "official": "",
+            "tags": ["中部", "北谷", "釣具"],
+        },
+        {
+            "name": "サンノリー 北谷店",
+            "area": "北谷町",
+            "address": "沖縄県中頭郡北谷町美浜 2-8-1",
+            "tel": "098-936-1639",
+            "official": "https://www.sannory.com/",
+            "tags": ["中部", "北谷", "釣具"],
+        },
+        {
+            "name": "シーランド うるま店",
+            "area": "うるま市",
+            "address": "沖縄県うるま市 塩屋507番地",
+            "tel": "098-987-8810",
+            "official": "",
+            "tags": ["中部", "うるま", "釣具"],
+        },
+        {
+            "name": "シーランド 名護店",
+            "area": "名護市",
+            "address": "沖縄県名護市 宮里871-3",
+            "tel": "0980-54-4075",
+            "official": "",
+            "tags": ["北部", "名護", "釣具"],
         },
     ]
     cards = "\n".join(
-        f"""
+        (
+            map_url := f"https://www.google.com/maps/search/?api=1&query={quote_plus(shop['name'] + ' ' + shop['address'])}",
+            official_link := (
+                f'<a href="{html.escape(shop["official"])}" target="_blank" rel="noopener noreferrer">公式サイト</a>'
+                if shop["official"]
+                else ""
+            ),
+            f"""
         <article class="shop-card">
           <div>
             <p class="panel-label">{html.escape(shop["area"])}</p>
             <h2>{html.escape(shop["name"])}</h2>
-            <p>{html.escape(shop["summary"])}</p>
+            <dl class="shop-meta">
+              <div><dt>住所</dt><dd>{html.escape(shop["address"])}</dd></div>
+              <div><dt>電話</dt><dd>{html.escape(shop["tel"])}</dd></div>
+            </dl>
             <ul class="chips">{"".join(f"<li><span>{html.escape(tag)}</span></li>" for tag in shop["tags"])}</ul>
           </div>
           <div class="shop-links">
-            <a href="{html.escape(shop["official"])}" target="_blank" rel="noopener noreferrer">公式サイト</a>
-            <a href="{html.escape(shop["map"])}" target="_blank" rel="noopener noreferrer">Googleマップ</a>
+            <a href="{html.escape(map_url)}" target="_blank" rel="noopener noreferrer">Googleマップ</a>
+            {official_link}
           </div>
         </article>
 """
+        )[-1]
         for shop in shops
     )
     content = f"""
@@ -466,7 +551,8 @@ def render_shops() -> str:
     <section class="page-heading">
       <p class="eyebrow">Tackle Shops</p>
       <h1>沖縄の釣具店リンク</h1>
-      <p>釣行前の道具準備、餌の購入、現地の釣果相談に使いやすいリンク集です。営業時間や在庫は変わるため、来店前に公式サイトや地図で最新情報を確認してください。</p>
+      <p>釣行前の道具準備、餌の購入、現地の釣果相談に使いやすいリンク集です。店舗情報は釣りビジョンの全国釣具店情報を参考にし、Googleマップで確認しやすい形に整理しています。</p>
+      <p class="source-note">参考：<a href="{source_url}" target="_blank" rel="noopener noreferrer">釣りビジョン 全国釣具店情報 沖縄県の釣具店一覧</a></p>
     </section>
     <section class="shop-grid">
       {cards}
@@ -881,6 +967,14 @@ main, .page {
   max-width: 720px;
   margin: 0;
 }
+.source-note {
+  margin-top: 10px;
+  font-size: .9rem;
+}
+.source-note a {
+  color: var(--teal);
+  font-weight: 800;
+}
 .article {
   background: transparent;
   border: 0;
@@ -1108,9 +1202,29 @@ main, .page {
 .shop-card p {
   margin: 0 0 14px;
 }
+.shop-meta {
+  display: grid;
+  gap: 8px;
+  margin: 0 0 12px;
+}
+.shop-meta div {
+  background: #f6fbff;
+  border-radius: 8px;
+  padding: 9px 10px;
+}
+.shop-meta dt {
+  color: var(--muted);
+  font-size: .74rem;
+  font-weight: 800;
+}
+.shop-meta dd {
+  margin: 2px 0 0;
+  font-weight: 800;
+  overflow-wrap: anywhere;
+}
 .shop-links {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
   gap: 8px;
 }
 .shop-links a {
